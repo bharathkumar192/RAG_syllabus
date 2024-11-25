@@ -1,0 +1,38 @@
+# Core Framework
+Flask==2.3.3
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.2
+Flask-WTF==1.1.1
+Flask-Migrate==4.0.5  # Added for database migrations
+Flask-Bcrypt==1.0.1   # Added for password hashing
+email-validator==2.2.0
+
+# Database
+SQLAlchemy==2.0.20
+alembic==1.12.0       # Added for database migrations
+
+# Security
+bcrypt==4.0.1
+PyJWT==2.8.0
+
+# File Processing
+PyPDF2==3.0.1
+python-magic==0.4.27
+
+# AI/ML
+openai==1.3.0
+chromadb
+numpy==1.24.3
+tiktoken==0.5.1
+sentence-transformers>=2.2.2
+
+
+# Testing
+pytest==7.4.2
+pytest-cov==4.1.0
+
+# Utils
+python-dotenv==1.0.0
+Werkzeug==2.3.7
+psutil==5.9.5 
+colorlog

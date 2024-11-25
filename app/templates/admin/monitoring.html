@@ -1,0 +1,293 @@
+# app/templates/admin/monitoring.html
+{% extends "base.html" %}
+
+{% block title %}System Monitoring{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-chart-line me-2"></i>System Monitoring</h2>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary" onclick="refreshStats()">
+                <i class="fas fa-sync-alt me-1"></i>Refresh
+            </button>
+            <button class="btn btn-outline-primary" id="autoRefresh">
+                <i class="fas fa-clock me-1"></i>Auto Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- System Health Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-left-primary shadow h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                CPU Usage
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="cpuUsage">
+                                0%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-microchip fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    <div class="progress mt-2" style="height: 4px;">
+                        <div class="progress-bar" id="cpuBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-left-success shadow h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Memory Usage
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="memoryUsage">
+                                0%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-memory fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    <div class="progress mt-2" style="height: 4px;">
+                        <div class="progress-bar bg-success" id="memoryBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-left-info shadow h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Disk Usage
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="diskUsage">
+                                0%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-hdd fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    <div class="progress mt-2" style="height: 4px;">
+                        <div class="progress-bar bg-info" id="diskBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-left-warning shadow h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Active Threads
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="threadCount">
+                                0
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-network-wired fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">System Resource Usage History</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="resourceChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">API Response Times</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="responseTimeChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Stats and Errors -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">API Endpoint Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="endpointStats">
+                            <thead>
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Total Calls</th>
+                                    <th>Avg Response Time</th>
+                                    <th>Error Rate</th>
+                                    <th>Last Call</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Errors</h6>
+                </div>
+                <div class="card-body">
+                    <div id="errorList" style="max-height: 400px; overflow-y: auto;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let resourceChart = null;
+    let responseTimeChart = null;
+    let autoRefreshInterval = null;
+
+    // Initialize charts
+    function initCharts() {
+        const ctx1 = document.getElementById('resourceChart').getContext('2d');
+        resourceChart = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'CPU Usage',
+                    borderColor: '#4e73df',
+                    data: []
+                }, {
+                    label: 'Memory Usage',
+                    borderColor: '#1cc88a',
+                    data: []
+                }, {
+                    label: 'Disk Usage',
+                    borderColor: '#36b9cc',
+                    data: []
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        const ctx2 = document.getElementById('responseTimeChart').getContext('2d');
+        responseTimeChart = new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Response Time (ms)',
+                    borderColor: '#f6c23e',
+                    data: []
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    // Update system stats
+    async function refreshStats() {
+        try {
+            const [systemResponse, apiResponse] = await Promise.all([
+                fetch('/monitoring/system-stats'),
+                fetch('/monitoring/api-stats')
+            ]);
+
+            const systemData = await systemResponse.json();
+            const apiData = await apiResponse.json();
+
+            updateSystemMetrics(systemData.current);
+            updateCharts(systemData.history);
+            updateApiStats(apiData);
+        } catch (error) {
+            console.error('Error fetching stats:', error);
+        }
+    }
+
+    // Update system metrics
+    function updateSystemMetrics(data) {
+        document.getElementById('cpuUsage').textContent = `${data.cpu_percent}%`;
+        document.getElementById('cpuBar').style.width = `${data.cpu_percent}%`;
+
+        document.getElementById('memoryUsage').textContent = `${data.memory_usage.percent}%`;
+        document.getElementById('memoryBar').style.width = `${data.memory_usage.percent}%`;
+
+        document.getElementById('diskUsage').textContent = `${data.disk_usage}%`;
+        document.getElementById('diskBar').style.width = `${data.disk_usage}%`;
+
+        document.getElementById('threadCount').textContent = data.threads;
+    }
+
+    // Update error list
+    function updateErrorList(errors) {
+        const errorList = document.getElementById('errorList');
+        errorList.innerHTML = errors.map(error => `
+            <div class="alert alert-danger mb-2">
+                <small class="text-muted d-block">${new Date(error.timestamp).toLocaleString()}</small>
+                ${error.message}
+            </div>
+        `).join('');
+    }
+
+    // Toggle auto refresh
+    document.getElementById('autoRefresh').addEventListener('click', function() {
+        const btn = this;
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+            btn.classList.remove('active');
+        } else {
+            refreshStats();
+            autoRefreshInterval = setInterval(refreshStats, 30000); // Refresh every 30 seconds
+            btn.classList.add('active');
+        }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        initCharts();
+        refreshStats();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}View Syllabus - {{ syllabus.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    #pdfContainer {
+        height: calc(100vh - 200px);
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+    }
+    .highlight-section {
+        background-color: rgba(255, 255, 0, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('student.dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ syllabus.title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- PDF Viewer -->
+        <div class="col-md-9">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-file-pdf me-2"></i>{{ syllabus.title }}
+                    </h6>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary btn-sm" id="zoomIn">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" id="zoomOut">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <a href="{{ url_for('student.get_pdf', syllabus_id=syllabus.id) }}" 
+                           class="btn btn-outline-primary btn-sm" 
+                           download="{{ syllabus.title }}.pdf">
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="pdfContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Chat -->
+        <div class="col-md-3">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-comments me-2"></i>Quick Chat
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="quick-chat-messages mb-3" style="height: 300px; overflow-y: auto;">
+                        <!-- Messages will be dynamically added here -->
+                    </div>
+                    <form id="quickChatForm">
+                        <div class="input-group">
+                            <input type="text" class="form-control" 
+                                   placeholder="Ask a question...">
+                            <button class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+<script>
+    // Initialize PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+
+    let pdfDoc = null;
+    let pageNum = 1;
+    let currentZoom = 1.0;
+    const container = document.getElementById('pdfContainer');
+
+    // Load the PDF
+    pdfjsLib.getDocument('{{ url_for('student.get_pdf', syllabus_id=syllabus.id) }}')
+        .promise.then(function(pdf) {
+            pdfDoc = pdf;
+            renderPage(pageNum);
+        })
+        .catch(function(error) {
+            console.error('Error loading PDF:', error);
+            container.innerHTML = '<div class="alert alert-danger m-3">Error loading PDF</div>';
+        });
+
+    function renderPage(num) {
+        pdfDoc.getPage(num).then(function(page) {
+            const viewport = page.getViewport({ scale: currentZoom });
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            canvas.style.width = '100%';
+            canvas.style.height = 'auto';
+
+            container.innerHTML = '';
+            container.appendChild(canvas);
+
+            page.render({
+                canvasContext: ctx,
+                viewport: viewport
+            });
+        });
+    }
+
+    // Zoom controls
+    document.getElementById('zoomIn').addEventListener('click', function() {
+        currentZoom += 0.2;
+        renderPage(pageNum);
+    });
+
+    document.getElementById('zoomOut').addEventListener('click', function() {
+        currentZoom = Math.max(0.4, currentZoom - 0.2);
+        renderPage(pageNum);
+    });
+
+    // Implement quick chat functionality
+    const quickChatForm = document.getElementById('quickChatForm');
+    const messagesContainer = document.querySelector('.quick-chat-messages');
+
+    quickChatForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const input = this.querySelector('input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        // Add message to chat
+        appendMessage(message, true);
+        input.value = '';
+
+        try {
+            const response = await fetch('{{ url_for('student.send_message', syllabus_id=syllabus.id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            appendMessage(data.response, false);
+
+            // If there are highlighted sections, show them on the PDF
+            if (data.context && data.context.length > 0) {
+                highlightContextInPdf(data.context);
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            appendMessage('Sorry, there was an error processing your message.', false);
+        }
+    });
+
+    function appendMessage(message, isUser) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message mb-2 ${isUser ? 'text-end' : ''}`;
+        messageDiv.innerHTML = `
+            <div class="message-bubble p-2 ${isUser ? 'bg-primary text-white' : 'bg-light'}"
+                 style="border-radius: 15px; display: inline-block; max-width: 80%;">
+                ${message}
+            </div>
+            <small class="text-muted d-block">
+                ${new Date().toLocaleTimeString()}
+            </small>
+        `;
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // PDF navigation controls
+    let currentPage = 1;
+    const totalPages = pdfDoc ? pdfDoc.numPages : 0;
+
+    function addPageControls() {
+        const controls = document.createElement('div');
+        controls.className = 'pdf-controls position-fixed bottom-0 start-50 translate-middle-x bg-white p-2 rounded shadow';
+        controls.style.zIndex = '1000';
+        controls.innerHTML = `
+            <div class="btn-group">
+                <button class="btn btn-outline-primary" id="prevPage">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span class="btn btn-outline-primary disabled">
+                    Page <span id="pageNum">1</span> of <span id="pageCount">1</span>
+                </span>
+                <button class="btn btn-outline-primary" id="nextPage">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        `;
+        document.body.appendChild(controls);
+
+        // Update page numbers
+        document.getElementById('pageCount').textContent = totalPages;
+        document.getElementById('pageNum').textContent = currentPage;
+
+        // Add event listeners
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+                document.getElementById('pageNum').textContent = currentPage;
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+                document.getElementById('pageNum').textContent = currentPage;
+            }
+        });
+    }
+
+    // Add keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+            document.getElementById('prevPage').click();
+        } else if (e.key === 'ArrowRight') {
+            document.getElementById('nextPage').click();
+        }
+    });
+
+    // Function to highlight context in PDF
+    function highlightContextInPdf(context) {
+        const highlightLayer = document.createElement('div');
+        highlightLayer.className = 'highlight-layer';
+        highlightLayer.style.position = 'absolute';
+        highlightLayer.style.top = '0';
+        highlightLayer.style.left = '0';
+        highlightLayer.style.right = '0';
+        highlightLayer.style.bottom = '0';
+        highlightLayer.style.pointerEvents = 'none';
+        
+        context.forEach(ctx => {
+            const highlight = document.createElement('div');
+            highlight.className = 'highlight-section';
+            // Position the highlight based on the text position in the PDF
+            // This requires implementing text position detection in the PDF
+            highlightLayer.appendChild(highlight);
+        });
+
+        container.appendChild(highlightLayer);
+        
+        // Remove highlights after 3 seconds
+        setTimeout(() => {
+            highlightLayer.remove();
+        }, 3000);
+    }
+
+    // Initialize page controls once PDF is loaded
+    pdfjsLib.getDocument('{{ url_for('student.get_pdf', syllabus_id=syllabus.id) }}')
+        .promise.then(function(pdf) {
+            pdfDoc = pdf;
+            totalPages = pdf.numPages;
+            renderPage(currentPage);
+            addPageControls();
+        });
+</script>
+{% endblock %}

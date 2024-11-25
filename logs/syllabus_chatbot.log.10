@@ -1,0 +1,89 @@
+2024-11-24 23:21:21,763 INFO: Syllabus Chatbot startup [in C:\Users\bhara\Downloads\RAG_app\app\errors.py:43]
+2024-11-24 23:21:26,832 INFO: Syllabus Chatbot startup [in C:\Users\bhara\Downloads\RAG_app\app\errors.py:43]
+2024-11-24 23:23:21,243 INFO: Attempting to save file: 20241124_232321_HW4-2_1.pdf [in C:\Users\bhara\Downloads\RAG_app\app\routes\teacher.py:58]
+2024-11-24 23:23:21,243 INFO: File path: app\static\uploads\20241124_232321_HW4-2_1.pdf [in C:\Users\bhara\Downloads\RAG_app\app\routes\teacher.py:59]
+2024-11-24 23:23:21,247 INFO: Processing PDF for syllabus ID: 1 [in C:\Users\bhara\Downloads\RAG_app\app\routes\teacher.py:80]
+2024-11-24 23:23:21,247 INFO: Starting PDF processing for syllabus ID: 1 [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:229]
+2024-11-24 23:23:21,248 INFO: Initializing ChromaDB with persist_dir: C:\Users\bhara\AppData\Local\Temp\chroma_db [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:22]
+2024-11-24 23:23:21,375 INFO: ChromaDB client initialized successfully [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:28]
+2024-11-24 23:23:21,375 INFO: Loading sentence transformer model [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:31]
+2024-11-24 23:23:22,166 INFO: Sentence transformer model loaded successfully [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:33]
+2024-11-24 23:23:22,166 INFO: Processing file: app\static\uploads\20241124_232321_HW4-2_1.pdf [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:235]
+2024-11-24 23:23:22,166 INFO: Attempting to extract text from PDF: app\static\uploads\20241124_232321_HW4-2_1.pdf [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:43]
+2024-11-24 23:23:22,203 INFO: Successfully extracted 3075 characters from PDF [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:69]
+2024-11-24 23:23:22,204 INFO: Extracted 3075 characters of text [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:239]
+2024-11-24 23:23:22,204 ERROR: Error processing syllabus 1: object of type 'generator' has no len() [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:259]
+2024-11-24 23:23:22,205 ERROR: Traceback: Traceback (most recent call last):
+  File "C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py", line 243, in process_pdf
+    logger.info(f"Created {len(chunks)} text chunks")
+TypeError: object of type 'generator' has no len()
+ [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:260]
+2024-11-24 23:23:22,207 ERROR: Error uploading syllabus: object of type 'generator' has no len() [in C:\Users\bhara\Downloads\RAG_app\app\routes\teacher.py:102]
+2024-11-24 23:23:22,207 ERROR: Full traceback: Traceback (most recent call last):
+  File "C:\Users\bhara\Downloads\RAG_app\app\routes\teacher.py", line 83, in upload_syllabus
+    process_pdf(syllabus)
+  File "C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py", line 243, in process_pdf
+    logger.info(f"Created {len(chunks)} text chunks")
+TypeError: object of type 'generator' has no len()
+ [in C:\Users\bhara\Downloads\RAG_app\app\routes\teacher.py:103]
+2024-11-24 23:23:22,208 INFO: Cleaned up file after error: app\static\uploads\20241124_232321_HW4-2_1.pdf [in C:\Users\bhara\Downloads\RAG_app\app\routes\teacher.py:114]
+2024-11-24 23:24:19,890 INFO: Syllabus Chatbot startup [in C:\Users\bhara\Downloads\RAG_app\app\errors.py:43]
+2024-11-24 23:24:46,509 INFO: Syllabus Chatbot startup [in C:\Users\bhara\Downloads\RAG_app\app\errors.py:43]
+2024-11-24 23:25:17,805 INFO: Syllabus Chatbot startup [in C:\Users\bhara\Downloads\RAG_app\app\errors.py:43]
+2024-11-24 23:25:50,106 INFO: Syllabus Chatbot startup [in C:\Users\bhara\Downloads\RAG_app\app\errors.py:43]
+2024-11-24 23:26:50,993 INFO: Attempting to save file: 20241124_232650_HW4-2_1.pdf [in C:\Users\bhara\Downloads\RAG_app\app\routes\teacher.py:58]
+2024-11-24 23:26:50,993 INFO: File path: app\static\uploads\20241124_232650_HW4-2_1.pdf [in C:\Users\bhara\Downloads\RAG_app\app\routes\teacher.py:59]
+2024-11-24 23:26:50,996 INFO: Processing PDF for syllabus ID: 1 [in C:\Users\bhara\Downloads\RAG_app\app\routes\teacher.py:80]
+2024-11-24 23:26:50,997 INFO: Starting PDF processing for syllabus ID: 1 [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:212]
+2024-11-24 23:26:50,997 INFO: Initializing ChromaDB with persist_dir: C:\Users\bhara\AppData\Local\Temp\chroma_db [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:22]
+2024-11-24 23:26:51,083 INFO: ChromaDB client initialized successfully [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:28]
+2024-11-24 23:26:51,083 INFO: Loading sentence transformer model [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:31]
+2024-11-24 23:26:51,870 INFO: Sentence transformer model loaded successfully [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:33]
+2024-11-24 23:26:51,870 INFO: Processing file: app\static\uploads\20241124_232650_HW4-2_1.pdf [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:218]
+2024-11-24 23:26:51,871 INFO: Attempting to extract text from PDF: app\static\uploads\20241124_232650_HW4-2_1.pdf [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:43]
+2024-11-24 23:26:51,903 INFO: Successfully extracted 3075 characters from PDF [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:69]
+2024-11-24 23:26:51,903 INFO: Extracted 3075 characters of text [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:222]
+2024-11-24 23:26:51,904 INFO: Chunking text of length 3075 with chunk_size=1000, overlap=100 [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:80]
+2024-11-24 23:27:03,402 INFO: Generating embeddings for chunks [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:127]
+2024-11-24 23:27:06,807 INFO: Successfully generated 100 embeddings [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:148]
+2024-11-24 23:27:06,808 INFO: Processed 100 chunks so far [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:249]
+2024-11-24 23:27:07,383 INFO: Generating embeddings for chunks [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:127]
+2024-11-24 23:27:07,517 INFO: Successfully generated 1 embeddings [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:148]
+2024-11-24 23:27:07,517 INFO: Created total of 101 text chunks [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:257]
+2024-11-24 23:27:07,518 INFO: Storing vectors for collection: syllabus_1 [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:163]
+2024-11-24 23:27:07,519 ERROR: Error storing vectors: Collection syllabus_1 does not exist. [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:202]
+2024-11-24 23:27:07,537 ERROR: Traceback: Traceback (most recent call last):
+  File "C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py", line 167, in store_vectors
+    collection = self.chroma_client.get_collection(name=collection_name)
+  File "C:\Users\bhara\Downloads\RAG_app\venv\lib\site-packages\chromadb\api\client.py", line 171, in get_collection
+    model = self._server.get_collection(
+  File "C:\Users\bhara\Downloads\RAG_app\venv\lib\site-packages\chromadb\telemetry\opentelemetry\__init__.py", line 150, in wrapper
+    return f(*args, **kwargs)
+  File "C:\Users\bhara\Downloads\RAG_app\venv\lib\site-packages\chromadb\api\segment.py", line 103, in wrapper
+    return self._rate_limit_enforcer.rate_limit(func)(*args, **kwargs)
+  File "C:\Users\bhara\Downloads\RAG_app\venv\lib\site-packages\chromadb\rate_limit\simple_rate_limit\__init__.py", line 23, in wrapper
+    return func(*args, **kwargs)
+  File "C:\Users\bhara\Downloads\RAG_app\venv\lib\site-packages\chromadb\api\segment.py", line 300, in get_collection
+    raise InvalidCollectionException(f"Collection {name} does not exist.")
+chromadb.errors.InvalidCollectionException: Collection syllabus_1 does not exist.
+ [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:203]
+2024-11-24 23:27:07,539 ERROR: Error processing syllabus 1: Collection syllabus_1 does not exist. [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:269]
+2024-11-24 23:27:07,539 ERROR: Traceback: Traceback (most recent call last):
+  File "C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py", line 260, in process_pdf
+    collection_name = processor.store_vectors(syllabus.id, all_chunks, all_embeddings)
+  File "C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py", line 167, in store_vectors
+    collection = self.chroma_client.get_collection(name=collection_name)
+  File "C:\Users\bhara\Downloads\RAG_app\venv\lib\site-packages\chromadb\api\client.py", line 171, in get_collection
+    model = self._server.get_collection(
+  File "C:\Users\bhara\Downloads\RAG_app\venv\lib\site-packages\chromadb\telemetry\opentelemetry\__init__.py", line 150, in wrapper
+    return f(*args, **kwargs)
+  File "C:\Users\bhara\Downloads\RAG_app\venv\lib\site-packages\chromadb\api\segment.py", line 103, in wrapper
+    return self._rate_limit_enforcer.rate_limit(func)(*args, **kwargs)
+  File "C:\Users\bhara\Downloads\RAG_app\venv\lib\site-packages\chromadb\rate_limit\simple_rate_limit\__init__.py", line 23, in wrapper
+    return func(*args, **kwargs)
+  File "C:\Users\bhara\Downloads\RAG_app\venv\lib\site-packages\chromadb\api\segment.py", line 300, in get_collection
+    raise InvalidCollectionException(f"Collection {name} does not exist.")
+chromadb.errors.InvalidCollectionException: Collection syllabus_1 does not exist.
+ [in C:\Users\bhara\Downloads\RAG_app\app\services\pdf_service.py:270]
+2024-11-24 23:27:07,542 ERROR: Error uploading syllabus: Collection syllabus_1 does not exist. [in C:\Users\bhara\Downloads\RAG_app\app\routes\teacher.py:102]
+2024-11-24 23:27:07,553 INFO: Cleaned up file after error: app\static\uploads\20241124_232650_HW4-2_1.pdf [in C:\Users\bhara\Downloads\RAG_app\app\routes\teacher.py:114]
