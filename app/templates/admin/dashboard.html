@@ -155,8 +155,7 @@
                                     <td>{{ teacher.email }}</td>
                                     <td>{{ teacher.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                                     <td>
-                                        <button class="btn btn-info btn-sm" 
-                                                onclick="viewTeacherDetails({{ teacher.id }})">
+                                        <button onclick="viewTeacherDetails({{ teacher.id }})" class="btn btn-primary btn-sm">
                                             <i class="fas fa-eye me-1"></i>View Details
                                         </button>
                                     </td>
@@ -344,15 +343,18 @@
 </script>
 <script>
     function viewTeacherDetails(teacherId) {
-        fetch(`/admin/teacher/${teacherId}`)
+        console.log(`Fetching details for teacher ID: ${teacherId}`); // Debug log
+        
+        fetch(`/teacher/${teacherId}`)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    console.error('Response status:', response.status); // Debug log
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Received teacher data:', data);
+                console.log('Received teacher data:', data); // Debug log
                 
                 // Update basic info
                 document.getElementById('teacherUsername').textContent = data.username;
@@ -402,7 +404,11 @@
                 }
                 
                 // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('teacherDetailModal'));
+                const modalElement = document.getElementById('teacherDetailModal');
+                if (!modalElement) {
+                    throw new Error('Modal element not found');
+                }
+                const modal = new bootstrap.Modal(modalElement);
                 modal.show();
             })
             .catch(error => {

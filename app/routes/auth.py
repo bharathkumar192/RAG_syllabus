@@ -1,12 +1,13 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models.user import User
-from app import db
+# from app import db
+from app.extensions import db, bcrypt  # Use this instead of from app import db
 from app.forms.auth_forms import RegistrationForm, LoginForm
-import logging
+from sqlalchemy.orm.session import Session
+from datetime import datetime
 
 auth_bp = Blueprint('auth', __name__)
-logger = logging.getLogger(__name__)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -41,18 +42,35 @@ def login():
     
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        
-        if user and user.check_password(form.password.data):
-            if not user.is_approved and user.role == 'teacher':
-                flash('Your account is pending admin approval.', 'warning')
-                return redirect(url_for('auth.login'))
+        try:
+            # Query user and keep session active
+            user = db.session.query(User).filter_by(username=form.username.data).first()
+            
+            if user and user.check_password(form.password.data):
+                if not user.is_approved and user.role == 'teacher':
+                    flash('Your account is pending admin approval.', 'warning')
+                    return redirect(url_for('auth.login'))
                 
-            login_user(user, remember=form.remember_me.data)
-            next_page = request.args.get('next')
-            return redirect(next_page or url_for('main.index'))
-        
-        flash('Invalid username or password', 'error')
+                # Update last login time within the same session
+                user.last_login = datetime.utcnow()
+                db.session.add(user)
+                db.session.commit()
+                
+                # Login user with the fresh session
+                login_succeeded = login_user(user, remember=form.remember_me.data)
+                
+                if login_succeeded:
+                    next_page = request.args.get('next')
+                    return redirect(next_page or url_for('main.index'))
+                else:
+                    db.session.rollback()
+                    flash('Error during login. Please try again.', 'error')
+            else:
+                flash('Invalid username or password', 'error')
+        except Exception as e:
+            current_app.logger.error(f"Login error: {str(e)}")
+            db.session.rollback()
+            flash('An error occurred during login. Please try again.', 'error')
     
     return render_template('auth/login.html', form=form)
 
@@ -60,12 +78,13 @@ def login():
 @login_required
 def logout():
     try:
-        username = current_user.username
-        logger.info(f"User {username} logging out")
+        user = current_user
         logout_user()
+        db.session.commit()
         flash('Successfully logged out.', 'success')
-        return redirect(url_for('auth.login'))
     except Exception as e:
-        logger.error(f"Error during logout: {str(e)}")
+        current_app.logger.error(f"Logout error: {str(e)}")
+        db.session.rollback()
         flash('An error occurred during logout.', 'error')
-        return redirect(url_for('main.index'))
+    
+    return redirect(url_for('auth.login'))

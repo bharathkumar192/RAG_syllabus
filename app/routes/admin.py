@@ -2,7 +2,8 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app.models.user import User
-from app import db
+# from app import db
+from app.extensions import db, bcrypt  # Use this instead of from app import db
 from functools import wraps
 
 admin_bp = Blueprint('admin', __name__)

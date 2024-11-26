@@ -5,7 +5,8 @@ from app.models.syllabus import Syllabus
 from app.models.chat import Chat
 from app.services.chat_service import ChatService
 from app.services.vector_store_service import VectorStoreService
-from app import db
+# from app import db
+from app.extensions import db, bcrypt  # Use this instead of from app import db
 from functools import wraps
 from sqlalchemy import or_
 from flask import request

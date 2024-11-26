@@ -1,10 +1,12 @@
-# app/models/syllabus.py
-from app import db
+# from app import db
+from app.extensions import db, bcrypt  # Use this instead of from app import db
 from datetime import datetime
 
 class Syllabus(db.Model):
+    __tablename__ = 'syllabi'
+    
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Updated to match User table name
     title = db.Column(db.String(200), nullable=False)
     department = db.Column(db.String(100))
     course_number = db.Column(db.String(20))

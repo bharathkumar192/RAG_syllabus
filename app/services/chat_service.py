@@ -3,7 +3,8 @@ from typing import Dict, List
 import openai
 from flask import current_app
 from app.models.chat import Chat
-from app import db
+# from app import db
+from app.extensions import db, bcrypt  # Use this instead of from app import db
 import json
 
 from app.services.vector_store_service import VectorStoreService

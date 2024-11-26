@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from app.models.syllabus import Syllabus
-from app import db
+# from app import db
+from app.extensions import db, bcrypt  # Use this instead of from app import db
 from app.forms.teacher_forms import SyllabusUploadForm
 from werkzeug.utils import secure_filename
 import os
@@ -16,6 +17,10 @@ from app.models.user import User
 import traceback
 from flask import jsonify
 from sqlalchemy import func
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 teacher_bp = Blueprint('teacher', __name__)
 admin_bp = Blueprint('admin', __name__)
@@ -245,17 +250,26 @@ def download_syllabus(syllabus_id):
         return redirect(url_for('teacher.dashboard'))
     
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != 'admin':
+            flash('You need to be an admin to access this page.', 'error')
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function
 
-
-@admin_bp.route('/admin/teacher/<int:teacher_id>')
+@admin_bp.route('/teacher/<int:teacher_id>')
 @login_required
 @admin_required
 def get_teacher_details(teacher_id):
     try:
+        logger.info(f"Fetching details for teacher ID: {teacher_id}")
         teacher = User.query.get_or_404(teacher_id)
         
         # Verify this is a teacher account
         if teacher.role != 'teacher':
+            logger.warning(f"Attempted to get teacher details for non-teacher user ID: {teacher_id}")
             return jsonify({'error': 'Not a teacher account'}), 400
             
         # Get statistics
@@ -278,7 +292,7 @@ def get_teacher_details(teacher_id):
             'vector_store_id': syllabus.vector_store_id
         } for syllabus in teacher.syllabi]
         
-        return jsonify({
+        response_data = {
             'id': teacher.id,
             'username': teacher.username,
             'email': teacher.email,
@@ -291,8 +305,11 @@ def get_teacher_details(teacher_id):
                 'total_queries': total_queries
             },
             'courses': courses
-        })
+        }
+        
+        logger.info(f"Successfully retrieved details for teacher {teacher.username}")
+        return jsonify(response_data)
         
     except Exception as e:
-        current_app.logger.error(f"Error getting teacher details: {str(e)}")
+        logger.error(f"Error getting teacher details: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500

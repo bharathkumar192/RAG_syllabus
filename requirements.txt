@@ -6,6 +6,7 @@ Flask-WTF==1.1.1
 Flask-Migrate==4.0.5  # Added for database migrations
 Flask-Bcrypt==1.0.1   # Added for password hashing
 email-validator==2.2.0
+Flask-Session
 
 # Database
 SQLAlchemy==2.0.20
@@ -36,3 +37,8 @@ python-dotenv==1.0.0
 Werkzeug==2.3.7
 psutil==5.9.5 
 colorlog
+
+# Testing tools
+pytest==7.4.2
+pytest-cov==4.1.0
+pytest-mock==3.11.1

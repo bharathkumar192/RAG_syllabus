@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from sqlalchemy import func, desc, distinct
-from app import db
+# from app import db
+from app.extensions import db, bcrypt  # Use this instead of from app import db
 from app.models.user import User
 from app.models.chat import Chat
 from app.models.syllabus import Syllabus
