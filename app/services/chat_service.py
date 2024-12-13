@@ -16,21 +16,31 @@ class ChatService:
     def generate_response(self, user_id: int, syllabus_id: int, message: str) -> Dict:
         """Generate a response using GPT and relevant context."""
         try:
-            # Get relevant context from vector store
+            # Get full syllabus content
             context = self.vector_store.get_relevant_context(syllabus_id, message)
+            
+            if not context:
+                return {
+                    'response': "I apologize, but I couldn't find the syllabus content. Please try again later.",
+                    'context': []
+                }
+            
+            # Use the full content as context
+            syllabus_content = context[0]['text']
             
             # Prepare messages for ChatGPT
             messages = [
                 {
                     "role": "system",
                     "content": "You are a helpful assistant that answers questions about course syllabi. "
-                              "Use the provided context to answer questions accurately. "
-                              "If you're not sure about something, say so."
+                            "Use the provided syllabus content to answer questions accurately. "
+                            "If you can't find relevant information in the syllabus, say so."
                 },
                 {
                     "role": "user",
-                    "content": f"Context from syllabus:\n{json.dumps([c['text'] for c in context])}\n\n"
-                              f"Question: {message}"
+                    "content": f"Here is the syllabus content:\n\n{syllabus_content}\n\n"
+                            f"Question: {message}\n\n"
+                            "Please answer based on the syllabus content provided."
                 }
             ]
 

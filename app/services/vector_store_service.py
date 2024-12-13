@@ -23,57 +23,44 @@ class VectorStoreService:
         
         # Initialize the sentence transformer model
         self.model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
-        
-    def _generate_embedding(self, text: str) -> List[float]:
-        """Generate embedding using sentence-transformers."""
-        try:
-            # Generate embedding and convert to list
-            embedding = self.model.encode(text, convert_to_numpy=True)
-            if isinstance(embedding, np.ndarray):
-                return embedding.tolist()
-            return embedding
-            
-        except Exception as e:
-            logger.error(f"Error generating embedding: {str(e)}")
-            logger.error(f"Traceback: {traceback.format_exc()}")
-            raise
 
-    def get_relevant_context(self, syllabus_id: int, query: str, num_results: int = 3) -> List[Dict[str, Any]]:
-        """Retrieve relevant context for a given query."""
+    def get_full_syllabus_content(self, syllabus_id: int) -> str:
+        """Get the full content of the syllabus from ChromaDB."""
         try:
             collection_name = f"syllabus_{syllabus_id}"
+            collection = self.chroma_client.get_collection(name=collection_name)
             
-            # Get collection
-            try:
-                collection = self.chroma_client.get_collection(name=collection_name)
-            except ValueError as e:
-                logger.error(f"Collection not found: {str(e)}")
-                return []
+            # Get all documents
+            results = collection.get()
             
-            # Generate embedding for the query and ensure it's a list
-            query_embedding = self._generate_embedding(query)
-            if isinstance(query_embedding, np.ndarray):
-                query_embedding = query_embedding.tolist()
+            if results and 'documents' in results:
+                # Combine all chunks into one text
+                full_text = " ".join(results['documents'])
+                return full_text
             
-            # Search for similar chunks
-            results = collection.query(
-                query_embeddings=[query_embedding],
-                n_results=num_results,
-                include=["documents", "distances"]
-            )
-            
-            # Format results
-            context = []
-            if results['documents']:
-                for i in range(len(results['documents'][0])):
-                    context.append({
-                        'text': results['documents'][0][i],
-                        'similarity': 1 - float(results['distances'][0][i])
-                    })
-            
-            return context
+            return ""
             
         except Exception as e:
-            logger.error(f"Error retrieving context: {str(e)}")
+            logger.error(f"Error getting full syllabus content: {str(e)}")
+            return ""
+
+    def get_relevant_context(self, syllabus_id: int, query: str, num_results: int = 3) -> List[Dict[str, Any]]:
+        """Get relevant context by using the full syllabus content."""
+        try:
+            # Get full syllabus content
+            full_content = self.get_full_syllabus_content(syllabus_id)
+            
+            if not full_content:
+                logger.warning(f"No content found for syllabus {syllabus_id}")
+                return []
+            
+            # Create a context with the full content
+            return [{
+                'text': full_content,
+                'similarity': 1.0
+            }]
+            
+        except Exception as e:
+            logger.error(f"Error getting context: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
-            raise
+            return []

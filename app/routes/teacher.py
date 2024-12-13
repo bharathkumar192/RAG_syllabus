@@ -138,23 +138,42 @@ def upload_syllabus():
 @login_required
 @teacher_required
 def delete_syllabus(syllabus_id):
-    syllabus = Syllabus.query.get_or_404(syllabus_id)
-    if syllabus.user_id != current_user.id:
-        flash('You do not have permission to delete this syllabus.', 'error')
-        return redirect(url_for('teacher.dashboard'))
-    
     try:
+        syllabus = Syllabus.query.get_or_404(syllabus_id)
+        
+        # Check permission
+        if syllabus.user_id != current_user.id:
+            flash('You do not have permission to delete this syllabus.', 'error')
+            return redirect(url_for('teacher.dashboard'))
+        
+        # Delete associated chat records first
+        Chat.query.filter_by(syllabus_id=syllabus_id).delete()
+        
         # Delete the file
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], syllabus.file_path)
         if os.path.exists(file_path):
             os.remove(file_path)
+            
+        # Delete chromadb collection if exists
+        if syllabus.vector_store_id:
+            try:
+                chroma_client = chromadb.PersistentClient(
+                    path=os.path.join(tempfile.gettempdir(), "chroma_db")
+                )
+                chroma_client.delete_collection(name=syllabus.vector_store_id)
+                logger.info(f"Deleted vector store collection: {syllabus.vector_store_id}")
+            except Exception as e:
+                logger.warning(f"Error deleting vector store collection: {str(e)}")
         
-        # Delete from database
+        # Delete syllabus record
         db.session.delete(syllabus)
         db.session.commit()
+        
         flash('Syllabus deleted successfully!', 'success')
+        
     except Exception as e:
-        current_app.logger.error(f"Error deleting syllabus: {str(e)}")
+        db.session.rollback()
+        logger.error(f"Error deleting syllabus: {str(e)}")
         flash('Error deleting syllabus. Please try again.', 'error')
     
     return redirect(url_for('teacher.dashboard'))
